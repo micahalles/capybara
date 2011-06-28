@@ -1,8 +1,11 @@
 require 'spec_helper'
 require 'capybara/rspec'
-require 'capybara/rspec/features'
 
 Capybara.app = TestApp
+
+RSpec.configuration.before(:each, :example_group => {:file_path => __FILE__}) do
+  @in_filtered_hook = true
+end
 
 feature "Capybara's feature DSL" do
   background do
@@ -24,6 +27,14 @@ feature "Capybara's feature DSL" do
 
   scenario "runs background" do
     @in_background.should be_true
+  end
+
+  scenario "runs hooks filtered by file path" do
+    @in_filtered_hook.should be_true
+  end
+
+  scenario "doesn't pollute the Object namespace" do
+    Object.new.respond_to?(:feature, true).should be_false
   end
 end
 

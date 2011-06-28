@@ -27,6 +27,10 @@ module Capybara
         "expected #{selector_name} not to return anything"
       end
 
+      def description
+        "has #{selector_name}"
+      end
+
       def selector_name
         name = "#{normalized.name} #{normalized.locator.inspect}"
         name << " with text #{normalized.options[:text].inspect}" if normalized.options[:text]
@@ -56,14 +60,18 @@ module Capybara
         @failure_message = block
       end
 
+      def arguments
+        if options.empty? then [locator] else [locator, options] end
+      end
+
       def matches?(actual)
         @actual = wrap(actual)
-        @actual.send(:"has_#{name}?", locator, *options)
+        @actual.send(:"has_#{name}?", *arguments)
       end
 
       def does_not_match?(actual)
         @actual = wrap(actual)
-        @actual.send(:"has_no_#{name}?", locator, *options)
+        @actual.send(:"has_no_#{name}?", *arguments)
       end
 
       def failure_message_for_should
@@ -76,6 +84,10 @@ module Capybara
 
       def failure_message_for_should_not
         "expected #{selector_name} not to return anything"
+      end
+
+      def description
+        "has #{selector_name}"
       end
 
       def selector_name
@@ -97,8 +109,8 @@ module Capybara
       HaveSelector.new(*args)
     end
 
-    def have_xpath(path, options={})
-      HaveMatcher.new(:xpath, path, options)
+    def have_xpath(xpath, options={})
+      HaveMatcher.new(:xpath, xpath, options)
     end
 
     def have_css(css, options={})
@@ -111,12 +123,32 @@ module Capybara
       end
     end
 
-    def have_button(button, options={})
-      HaveMatcher.new(:button, button, options) do |page, matcher|
-        buttons = page.all(:xpath, './/button | .//input[(@type="submit") or (@type="image") or (@type="button")]')
-        labels = buttons.map { |button| %("#{button[:value] or button.text}") }.join(', ')
-        %(expected there to be a button #{matcher.locator.inspect}, other buttons: #{labels})
-      end
+    def have_link(locator, options={})
+      HaveMatcher.new(:link, locator, options)
+    end
+
+    def have_button(locator)
+      HaveMatcher.new(:button, locator)
+    end
+
+    def have_field(locator, options={})
+      HaveMatcher.new(:field, locator, options)
+    end
+
+    def have_checked_field(locator)
+      HaveMatcher.new(:checked_field, locator)
+    end
+
+    def have_unchecked_field(locator)
+      HaveMatcher.new(:unchecked_field, locator)
+    end
+
+    def have_select(locator, options={})
+      HaveMatcher.new(:select, locator, options)
+    end
+
+    def have_table(locator, options={})
+      HaveMatcher.new(:table, locator, options)
     end
   end
 end

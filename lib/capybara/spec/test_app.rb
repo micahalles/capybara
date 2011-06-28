@@ -22,6 +22,10 @@ class TestApp < Sinatra::Base
     redirect '/landed'
   end
 
+  get '/host' do
+    "Current host is #{request.scheme}://#{request.host}"
+  end
+
   get '/redirect/:times/times' do
     times = params[:times].to_i
     if times.zero?
@@ -40,6 +44,10 @@ class TestApp < Sinatra::Base
   end
 
   get '/form/get' do
+    '<pre id="results">' + params[:form].to_yaml + '</pre>'
+  end
+
+  post '/relative' do
     '<pre id="results">' + params[:form].to_yaml + '</pre>'
   end
 
