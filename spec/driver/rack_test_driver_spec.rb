@@ -14,38 +14,15 @@ def capture(*streams)
   result.string
 end
 
-describe Capybara::Driver::RackTest do
+describe Capybara::RackTest::Driver do
   before do
     @driver = TestSessions::RackTest.driver
   end
 
   it "should throw an error when no rack app is given" do
     running do
-      Capybara::Driver::RackTest.new(nil)
+      Capybara::RackTest::Driver.new(nil)
     end.should raise_error(ArgumentError)
-  end
-
-  if '1.9'.respond_to?(:encode)
-    describe "with non-binary parameters" do
-
-      it "should convert attribute values to binary" do
-        output = capture(:stderr) {
-          @driver.visit('/mypage', :param => 'µ')
-        }.should_not =~ %r{warning: regexp match /.../n against to UTF-8 string}
-      end
-
-      it "should convert attribute with Array to binary" do
-        output = capture(:stderr) {
-          @driver.visit('/mypage', :param => ['µ'])
-        }.should_not =~ %r{warning: regexp match /.../n against to UTF-8 string}
-      end
-
-      it "should convert path to binary" do
-        output = capture(:stderr) {
-          @driver.visit('/mypage'.encode('utf-8'))
-        }.should_not =~ %r{warning: regexp match /.../n against to UTF-8 string}
-      end
-    end
   end
 
   it_should_behave_like "driver"
@@ -79,6 +56,28 @@ describe Capybara::Driver::RackTest do
       lambda { @driver.request }.should_not raise_error
       @driver.reset!
       lambda { @driver.request }.should raise_error
+    end
+  end
+
+  describe ':headers option' do
+    it 'should always set headers' do
+      @driver = Capybara::RackTest::Driver.new(TestApp, :headers => {'HTTP_FOO' => 'foobar'})
+      @driver.visit('/get_header')
+      @driver.body.should include('foobar')
+    end
+
+    it 'should keep headers on link clicks' do
+      @driver = Capybara::RackTest::Driver.new(TestApp, :headers => {'HTTP_FOO' => 'foobar'})
+      @driver.visit('/header_links')
+      @driver.find('.//a').first.click
+      @driver.body.should include('foobar')
+    end
+
+    it 'should keep headers on form submit' do
+      @driver = Capybara::RackTest::Driver.new(TestApp, :headers => {'HTTP_FOO' => 'foobar'})
+      @driver.visit('/header_links')
+      @driver.find('.//input').first.click
+      @driver.body.should include('foobar')
     end
   end
 end
