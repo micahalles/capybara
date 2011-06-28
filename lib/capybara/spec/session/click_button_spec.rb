@@ -12,6 +12,22 @@ shared_examples_for "click_button" do
       end
     end
 
+    context "with a form that has a relative url as an action" do
+      it "should post to the correct url" do
+        @session.click_button('Relative Action')
+        @session.current_path.should == '/relative'
+        extract_results(@session)['relative'].should == 'Relative Action'
+      end
+    end
+
+    context "with a form that has no action specified" do
+      it "should post to the correct url" do
+        @session.click_button('No Action')
+        @session.current_path.should == '/form'
+        extract_results(@session)['no_action'].should == 'No Action'
+      end
+    end
+    
     context "with value given on a submit button" do
       context "on a form with HTML5 fields" do
         before do
@@ -123,6 +139,18 @@ shared_examples_for "click_button" do
       end
     end
     
+    context "with title given on a submit button" do
+      it "should submit the associated form" do
+        @session.click_button('What an Awesome Button')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+
+      it "should work with partial matches" do
+        @session.click_button('What an Awesome')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+    end
+
     context "with alt given on an image button" do
       it "should submit the associated form" do
         @session.click_button('oh hai thar')
@@ -150,6 +178,18 @@ shared_examples_for "click_button" do
     context "with id given on an image button" do
       it "should submit the associated form" do
         @session.click_button('okay556')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+    end
+
+    context "with title given on an image button" do
+      it "should submit the associated form" do
+        @session.click_button('Okay 556 Image')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+
+      it "should work with partial matches" do
+        @session.click_button('Okay 556')
         extract_results(@session)['first_name'].should == 'John'
       end
     end
@@ -203,6 +243,17 @@ shared_examples_for "click_button" do
       end
     end
 
+    context "with title given on a button defined by <button> tag" do
+      it "should submit the associated form" do
+        @session.click_button('Click Title button')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+
+      it "should work with partial matches" do
+        @session.click_button('Click Title')
+        extract_results(@session)['first_name'].should == 'John'
+      end
+    end
     context "with a locator that doesn't exist" do
       it "should raise an error" do
         running do
@@ -249,4 +300,5 @@ shared_examples_for "click_button" do
       @session.body.should include('Postback')
     end
   end
+
 end

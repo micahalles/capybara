@@ -5,6 +5,7 @@ module Capybara
   class CapybaraError < StandardError; end
   class DriverNotFoundError < CapybaraError; end
   class ElementNotFound < CapybaraError; end
+  class FileNotFound < CapybaraError; end
   class UnselectNotAllowed < CapybaraError; end
   class NotSupportedByDriverError < CapybaraError; end
   class TimeoutError < CapybaraError; end
@@ -82,7 +83,7 @@ module Capybara
     #     within(:row, 3) { page.should have_content('$100.000') }
     #
     # It might be convenient to specify that the selector is automatically chosen for certain
-    # values. This way you don't have to explicitely specify that you are looking for a row, or
+    # values. This way you don't have to explicitly specify that you are looking for a row, or
     # an id. Let's say we want Capybara to treat any Symbols sent into methods like find to be
     # treated as though they were element ids. We could achieve this like so:
     #
@@ -199,10 +200,30 @@ module Capybara
   module Driver
     autoload :Base,     'capybara/driver/base'
     autoload :Node,     'capybara/driver/node'
-    autoload :RackTest, 'capybara/driver/rack_test_driver'
-    autoload :Celerity, 'capybara/driver/celerity_driver'
-    autoload :Culerity, 'capybara/driver/culerity_driver'
-    autoload :Selenium, 'capybara/driver/selenium_driver'
+
+    class Selenium
+      def initialize(*args)
+        raise "Capybara::Driver::Selenium has been renamed to Capybara::Selenium::Driver"
+      end
+    end
+
+    class RackTest
+      def initialize(*args)
+        raise "Capybara::Driver::RackTest has been renamed to Capybara::RackTest::Driver"
+      end
+    end
+  end
+
+  module RackTest
+    autoload :Driver,  'capybara/rack_test/driver'
+    autoload :Node,    'capybara/rack_test/node'
+    autoload :Form,    'capybara/rack_test/form'
+    autoload :Browser, 'capybara/rack_test/browser'
+  end
+
+  module Selenium
+    autoload :Node,    'capybara/selenium/node'
+    autoload :Driver,  'capybara/selenium/driver'
   end
 end
 
@@ -214,20 +235,13 @@ Capybara.configure do |config|
   config.default_wait_time = 2
   config.ignore_hidden_elements = false
   config.prefer_visible_elements = true
+  config.default_host = "http://www.example.com"
 end
 
 Capybara.register_driver :rack_test do |app|
-  Capybara::Driver::RackTest.new(app)
-end
-
-Capybara.register_driver :celerity do |app|
-  Capybara::Driver::Celerity.new(app)
-end
-
-Capybara.register_driver :culerity do |app|
-  Capybara::Driver::Culerity.new(app)
+  Capybara::RackTest::Driver.new(app)
 end
 
 Capybara.register_driver :selenium do |app|
-  Capybara::Driver::Selenium.new(app)
+  Capybara::Selenium::Driver.new(app)
 end
