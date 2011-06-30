@@ -45,6 +45,7 @@ class Capybara::Selenium::Node < Capybara::Driver::Node
 
   def click
     resynchronize { native.click }
+  rescue Selenium::WebDriver::Error::ObsoleteElementError
   end
 
   def drag_to(element)
